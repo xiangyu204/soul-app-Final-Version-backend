@@ -25,6 +25,50 @@ public class OllamaService {
         String userQuestion = request.getMessage();
         String chatContext = request.getContext();
 
+        String targetLang = request.getTargetLang();
+
+        // 默认韩语
+        if (targetLang == null || targetLang.isBlank()) {
+            targetLang = "ko";
+        }
+
+        // AI 回复语言
+        String answerLanguage;
+
+        switch (targetLang.toLowerCase()) {
+
+            case "zh":
+            case "zh-cn":
+                answerLanguage = "中文";
+                break;
+
+            case "en":
+                answerLanguage = "English";
+                break;
+
+            case "ja":
+                answerLanguage = "日本語";
+                break;
+
+            case "fr":
+                answerLanguage = "Français";
+                break;
+
+            case "de":
+                answerLanguage = "Deutsch";
+                break;
+
+            case "es":
+                answerLanguage = "Español";
+                break;
+
+            case "ar":
+                answerLanguage = "العربية";
+                break;
+
+            default:
+                answerLanguage = "한국어";
+        }
         if (userQuestion == null || userQuestion.trim().isEmpty()) {
             userQuestion = "최근 채팅 내용에서 사용자가 이해하지 못한 지식 포인트를 찾아서 설명해주세요.";
         }
@@ -40,7 +84,10 @@ public class OllamaService {
                 아래 사용자의 질문과 최근 채팅 내용을 바탕으로, 해당 지식 포인트를 쉽게 설명하세요.
 
                 답변 조건:
-                1. 한국어로 답변하세요.
+                1. 반드시 """
+                + answerLanguage +
+                """ 
+                로 답변하세요.
                 2. 초보자도 이해할 수 있게 쉽게 설명하세요.
                 3. 가능하면 간단한 예시를 포함하세요.
                 4. 너무 길게 쓰지 말고 3~5문장으로 설명하세요.

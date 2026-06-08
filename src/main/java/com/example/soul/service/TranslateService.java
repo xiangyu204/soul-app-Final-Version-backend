@@ -20,8 +20,8 @@ public class TranslateService {
         SimpleClientHttpRequestFactory factory =
                 new SimpleClientHttpRequestFactory();
 
-        factory.setConnectTimeout(3000);
-        factory.setReadTimeout(30000);
+        factory.setConnectTimeout(30000);
+        factory.setReadTimeout(300000);
 
         this.restTemplate = new RestTemplate(factory);
     }
@@ -67,7 +67,7 @@ public class TranslateService {
 
         Map<String, Object> body = new HashMap<>();
 
-        body.put("model", "translategemma:12b");
+        body.put("model", "translategemma:4b");
         body.put("prompt", prompt);
         body.put("stream", false);
 
@@ -99,7 +99,7 @@ public class TranslateService {
 
             translate("你好", "English");
 
-            System.out.println("translategemma:12b 已预热");
+            System.out.println("translategemma:4b 已预热");
 
         } catch (Exception e) {
 

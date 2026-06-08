@@ -1,72 +1,69 @@
 package com.example.soul.dto;
 
-// 用户个人资料响应 DTO
-// 사용자 개인 프로필 응답 DTO
+/**
+ * 用户个人资料响应 DTO
+ * 사용자 개인 프로필 응답 DTO
+ */
 public class ProfileResponse {
 
-    // 用户账号（登录名）
-    // 사용자 계정 (로그인 아이디)
+    // 用户账号
     private String username;
 
-    // 用户昵称/姓名
-    // 사용자 이름 / 닉네임
+    // 用户昵称
     private String name;
 
-    // 电话号码
-    // 전화번호
+    // 电话
     private String phone;
 
     // 邮箱
-    // 이메일
     private String email;
 
     // 地址
-    // 주소
     private String address;
 
-    // 头像URL
-    // 프로필 이미지 URL
+    // 头像
     private String avatar;
 
     // 性别
-    // 성별
     private String gender;
 
     // 年龄
-    // 나이
     private Integer age;
 
-    // 我可以教授的技能
-    // 내가 가르칠 수 있는 기술
+    // 我会的技能
     private String teachSkill;
 
-    // 我想学习的技能
-    // 내가 배우고 싶은 기술
+    // 我想学的技能
     private String learnSkill;
 
     // 国籍
-    // 국적
     private String nationality;
 
     // 学习时间段
-    // 학습 가능 시간대
     private String timeSlot;
 
     // 项目 / 奖项 / 证书
-    // 프로젝트 / 수상 / 자격증
     private String projectAwards;
 
     // 想学习的等级
-    // 배우고 싶은 레벨
-    private String learnLevel;
+    private String skillWantLevel;
 
-    // ===== 默认构造函数 =====
-    // 기본 생성자
+    // 会的等级
+    private String skillOfferLevel;
+
+    // 我会的技能 Quiz 分数
+    private Integer teachQuizScore;
+
+    // 我想学的技能 Quiz 分数
+    private Integer learnQuizScore;
+
+    // ===== 默认构造 =====
+
     public ProfileResponse() {
     }
 
-    // ===== 全参构造函数 =====
-    // 전체 필드 생성자
+    // ===== 全参构造 =====
+
     public ProfileResponse(
             String username,
             String name,
@@ -77,11 +74,14 @@ public class ProfileResponse {
             String gender,
             Integer age,
             String teachSkill,
-            String nationality,
             String learnSkill,
+            String nationality,
             String timeSlot,
             String projectAwards,
-            String learnLevel
+            String skillWantLevel,
+            String skillOfferLevel,
+            Integer teachQuizScore,
+            Integer learnQuizScore
     ) {
         this.username = username;
         this.name = name;
@@ -92,11 +92,14 @@ public class ProfileResponse {
         this.gender = gender;
         this.age = age;
         this.teachSkill = teachSkill;
-        this.nationality = nationality;
         this.learnSkill = learnSkill;
+        this.nationality = nationality;
         this.timeSlot = timeSlot;
         this.projectAwards = projectAwards;
-        this.learnLevel = learnLevel;
+        this.skillWantLevel = skillWantLevel;
+        this.skillOfferLevel = skillOfferLevel;
+        this.teachQuizScore = teachQuizScore;
+        this.learnQuizScore = learnQuizScore;
     }
 
     // ===== Getter / Setter =====
@@ -205,11 +208,35 @@ public class ProfileResponse {
         this.projectAwards = projectAwards;
     }
 
-    public String getLearnLevel() {
-        return learnLevel;
+    public String getSkillWantLevel() {
+        return skillWantLevel;
     }
 
-    public void setLearnLevel(String learnLevel) {
-        this.learnLevel = learnLevel;
+    public void setSkillWantLevel(String skillWantLevel) {
+        this.skillWantLevel = skillWantLevel;
+    }
+
+    public String getSkillOfferLevel() {
+        return skillOfferLevel;
+    }
+
+    public void setSkillOfferLevel(String skillOfferLevel) {
+        this.skillOfferLevel = skillOfferLevel;
+    }
+
+    public Integer getTeachQuizScore() {
+        return teachQuizScore;
+    }
+
+    public void setTeachQuizScore(Integer teachQuizScore) {
+        this.teachQuizScore = teachQuizScore;
+    }
+
+    public Integer getLearnQuizScore() {
+        return learnQuizScore;
+    }
+
+    public void setLearnQuizScore(Integer learnQuizScore) {
+        this.learnQuizScore = learnQuizScore;
     }
 }

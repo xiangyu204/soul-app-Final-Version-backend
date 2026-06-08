@@ -7,7 +7,7 @@ spring:
   cache:
     type: caffeine
     caffeine:
-      spec: maximumSize=100,expireAfterWrite=10m
+      spec: maximumSize=30000,expireAfterWrite=3000000m
   servlet:
     multipart:
       max-file-size: 5MB
@@ -25,4 +25,4 @@ server:
 
 ollama:
   base-url: http://localhost:11434
-  model: gemma4:e4b
+  model: gemma4:31b-cloud

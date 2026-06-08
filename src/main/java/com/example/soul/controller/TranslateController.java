@@ -4,9 +4,6 @@ import com.example.soul.dto.TranslateRequest;
 import com.example.soul.service.TranslateService;
 import org.springframework.web.bind.annotation.*;
 
-
-
-
 //翻译
 @RestController
 @RequestMapping("/api/translate")

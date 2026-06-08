@@ -12,98 +12,152 @@ import java.util.List;
 public class BoardService {
 
     private final BoardRepository boardRepository;
-    private final UserRepository userRepository;
+    private final UserRepository  userRepository;
 
     public BoardService(BoardRepository boardRepository,
                         UserRepository userRepository) {
         this.boardRepository = boardRepository;
-        this.userRepository = userRepository;
+        this.userRepository  = userRepository;
     }
 
-    public List<Board> getBoards() {
+    // =========================
+    // 공통: 유저 정보 + liked 주입
+    // =========================
+    private void injectUserInfo(Board board, String currentUsername) {
 
-        List<Board> boards =
-                boardRepository.findAll();
+        userRepository
+                .findByUsername(board.getUsername())
+                .ifPresent(user -> {
+                    board.setName(user.getName());
+                    board.setAvatar(user.getAvatar());
+                });
 
-        for (Board board : boards) {
-
-            User user =
-                    userRepository
-                            .findByUsername(board.getUsername())
-                            .orElse(null);
-
-            if (user != null) {
-
-                board.setName(user.getName());
-
-                board.setAvatar(user.getAvatar());
-            }
+        if (currentUsername != null && !currentUsername.isBlank()) {
+            board.setLiked(board.getLikedBy().contains(currentUsername));
         }
+    }
+
+    // =========================
+    // 전체 조회 + 정렬 + 필터
+    // =========================
+    public List<Board> getBoards(String sort,
+                                 String category,
+                                 String keyword,
+                                 String currentUsername) {
+
+        List<Board> boards;
+
+        boolean hasCategory =
+                category != null && !category.equals("전체");
+
+        boolean hasKeyword =
+                keyword != null && !keyword.isBlank();
+
+        if (hasCategory || hasKeyword) {
+
+            boards = boardRepository.findByCategoryAndKeyword(
+                    category == null ? "전체" : category,
+                    keyword
+            );
+
+        } else if ("likes".equals(sort)) {
+
+            boards = boardRepository.findAllByOrderByLikesDesc();
+
+        } else if ("comments".equals(sort)) {
+
+            boards = boardRepository.findAllByOrderByCommentCountDesc();
+
+        } else {
+
+            boards = boardRepository.findAll();
+        }
+
+        if ("likes".equals(sort)) {
+            boards.sort((a, b) -> b.getLikes() - a.getLikes());
+        } else if ("comments".equals(sort)) {
+            boards.sort((a, b) -> b.getCommentCount() - a.getCommentCount());
+        }
+
+        boards.forEach(b -> injectUserInfo(b, currentUsername));
 
         return boards;
     }
 
+    // =========================
+    // 저장
+    // =========================
     public Board saveBoard(Board board) {
         return boardRepository.save(board);
     }
 
-    public Board getBoard(Long id) {
+    // =========================
+    // 상세 조회
+    // =========================
+    public Board getBoard(Long id, String currentUsername) {
 
-        Board board =
-                boardRepository.findById(id)
-                        .orElse(null);
+        Board board = boardRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
 
-        if (board == null) {
-            return null;
-        }
-
-        User user =
-                userRepository
-                        .findByUsername(board.getUsername())
-                        .orElse(null);
-
-        if (user != null) {
-
-            board.setName(user.getName());
-
-            board.setAvatar(user.getAvatar());
-        }
+        injectUserInfo(board, currentUsername);
 
         return board;
     }
 
+    // =========================
+    // 카테고리 조회
+    // =========================
     public List<Board> getByCategory(String category) {
         return boardRepository.findByCategory(category);
     }
 
+    // =========================
+    // 검색
+    // =========================
     public List<Board> search(String keyword) {
         return boardRepository.findByTitleContaining(keyword);
     }
 
     // =========================
-    // 删除逻辑（已统一 username）
+    // 좋아요 토글
+    // =========================
+    public Board toggleLike(Long id, String username) {
+
+        Board board = boardRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        if (board.getLikedBy().contains(username)) {
+            board.getLikedBy().remove(username);
+            board.setLikes(Math.max(0, board.getLikes() - 1));
+        } else {
+            board.getLikedBy().add(username);
+            board.setLikes(board.getLikes() + 1);
+        }
+
+        Board saved = boardRepository.save(board);
+        saved.setLiked(saved.getLikedBy().contains(username));
+
+        return saved;
+    }
+
+    // =========================
+    // 삭제 (본인 + ADMIN)
     // =========================
     public void deleteBoard(Long id, String username) {
 
-        Board board = boardRepository.findById(id)
-                .orElse(null);
+        Board board = boardRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
 
-        if (board == null) {
-            throw new RuntimeException("게시글 없음");
-        }
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        User user = userRepository.findByUsername(username)
-                .orElse(null);
-
-        if (user == null) {
-            throw new RuntimeException("사용자 없음");
-        }
-
-        String role = user.getRole() == null ? "" : user.getRole().trim();
-
-        // ✔ 关键修复：统一字段
+        String  role     = user.getRole() == null ? "" : user.getRole().trim();
         boolean isAuthor = username.equals(board.getUsername());
-        boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+        boolean isAdmin  = "ADMIN".equalsIgnoreCase(role);
 
         if (!isAuthor && !isAdmin) {
             throw new RuntimeException("삭제 권한 없음");

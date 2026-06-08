@@ -33,16 +33,13 @@ public class ProfileController {
      */
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(
-
             @RequestParam String username
     ) {
-
         User user = userRepository
                 .findByUsername(username)
                 .orElse(null);
 
         if (user == null) {
-
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(message("User not found"));
         }
@@ -52,10 +49,6 @@ public class ProfileController {
         );
     }
 
-    /**
-     * 按 username 修改个人资料
-     * PUT /api/profile?username=gxc
-     */
     /**
      * 按 username 修改个人资料
      * PUT /api/profile
@@ -94,7 +87,6 @@ public class ProfileController {
             User user,
             ProfileUpdateRequest request
     ) {
-
         user.setName(trimToNull(request.getName()));
         user.setPhone(trimToNull(request.getPhone()));
         user.setEmail(trimToNull(request.getEmail()));
@@ -104,10 +96,8 @@ public class ProfileController {
         user.setAge(parseNullableInt(request.getAge()));
         user.setNationality(trimToNull(request.getNationality()));
 
-        // 前端字段
-        // teachSkill / learnSkill
-        // 数据库字段
-        // skillOffer / skillWant
+        // 前端字段：teachSkill / learnSkill
+        // 数据库字段：skillOffer / skillWant
         user.setSkillOffer(
                 trimToNull(request.getTeachSkill())
         );
@@ -126,10 +116,22 @@ public class ProfileController {
                 trimToNull(request.getProjectAwards())
         );
 
-        // 想学习的等级
-        user.setSkillWantLevel(
-                trimToNull(request.getLearnLevel())
-        );
+        // 擅长技能等级
+        // 注意：等级主要由 Quiz 更新，这里只有前端传了值才覆盖
+        String skillOfferLevel = trimToNull(request.getSkillOfferLevel());
+        if (skillOfferLevel != null) {
+            user.setSkillOfferLevel(skillOfferLevel);
+        }
+
+        // 想学习技能等级
+        // 注意：等级主要由 Quiz 更新，这里只有前端传了值才覆盖
+        String skillWantLevel = trimToNull(request.getSkillWantLevel());
+        if (skillWantLevel != null) {
+            user.setSkillWantLevel(skillWantLevel);
+        }
+
+        // Quiz 分数不在个人资料编辑里修改
+        // teachQuizScore / learnQuizScore 只由 QuizService 保存
     }
 
     /**
@@ -174,8 +176,23 @@ public class ProfileController {
         );
 
         // 想学习的等级
-        response.setLearnLevel(
+        response.setSkillWantLevel(
                 user.getSkillWantLevel()
+        );
+
+        // 会的等级
+        response.setSkillOfferLevel(
+                user.getSkillOfferLevel()
+        );
+
+        // 我会的技能 Quiz 分数
+        response.setTeachQuizScore(
+                user.getTeachQuizScore()
+        );
+
+        // 我想学的技能 Quiz 分数
+        response.setLearnQuizScore(
+                user.getLearnQuizScore()
         );
 
         return response;
@@ -216,7 +233,6 @@ public class ProfileController {
     private Integer parseNullableInt(
             String value
     ) {
-
         String trimmed =
                 trimToNull(value);
 
@@ -225,11 +241,8 @@ public class ProfileController {
         }
 
         try {
-
             return Integer.parseInt(trimmed);
-
         } catch (NumberFormatException e) {
-
             return null;
         }
     }

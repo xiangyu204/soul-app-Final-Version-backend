@@ -1,6 +1,8 @@
 package com.example.soul.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Board {
@@ -13,7 +15,6 @@ public class Board {
 
     private String title;
 
-    // ✔ 统一字段：发帖人
     private String username;
 
     @Column(columnDefinition = "TEXT")
@@ -23,94 +24,76 @@ public class Board {
 
     private String date;
 
-    // =========================
-// 用户显示名称（不存数据库）
-// =========================
+    private int likes = 0;
+
+    private int commentCount = 0;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "board_liked_by",
+            joinColumns = @JoinColumn(name = "board_id")
+    )
+    @Column(name = "username")
+    private List<String> likedBy = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(
+            name = "board_tags",
+            joinColumns = @JoinColumn(name = "board_id")
+    )
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>();
+
     @Transient
     private String name;
 
-    // =========================
-// 用户头像（不存数据库）
-// =========================
-    @Transient  //临时存储不写入数据库
+    @Transient
     private String avatar;
+
+    @Transient
+    private boolean liked;
 
     public Board() {}
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public String getCategory() {
-        return category;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public int getViews() { return views; }
+    public void setViews(int views) { this.views = views; }
 
-    // ❌ author 已废弃
-    // public String getAuthor() { ... }
-    // public void setAuthor(...) { ... }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
 
-    // ✔ 新统一字段
-    public String getUsername() {
-        return username;
-    }
+    public int getLikes() { return likes; }
+    public void setLikes(int likes) { this.likes = likes; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public int getCommentCount() { return commentCount; }
+    public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
 
-    public String getContent() {
-        return content;
-    }
+    public List<String> getLikedBy() { return likedBy; }
+    public void setLikedBy(List<String> likedBy) { this.likedBy = likedBy; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 
-    public int getViews() {
-        return views;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setViews(int views) {
-        this.views = views;
-    }
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
+    public boolean isLiked() { return liked; }
+    public void setLiked(boolean liked) { this.liked = liked; }
 }

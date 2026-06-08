@@ -2,46 +2,105 @@ package com.example.soul.dto;
 
 import java.util.List;
 
+/**
+ * 匹配用户返回 DTO
+ * 매칭 사용자 응답 DTO
+ */
 public class MatchUserResponse {
 
-    // 用户ID
+    /**
+     * 用户ID
+     * 사용자 ID
+     */
     private Long id;
 
-    // 用户账号（申请好友、创建聊天室时使用）
+    /**
+     * 用户账号
+     * 사용자 계정
+     */
     private String username;
 
-    // 页面显示名字
+    /**
+     * 页面显示名称
+     * 화면 표시 이름
+     */
     private String name;
 
-    // 年龄
+    /**
+     * 年龄
+     * 나이
+     */
     private Integer age;
 
-    // 性别
+    /**
+     * 性别
+     * 성별
+     */
     private String gender;
 
-    // 国籍
+    /**
+     * 国籍
+     * 국적
+     */
     private String nationality;
 
-    // 头像
+    /**
+     * 用户头像
+     * 사용자 프로필 이미지
+     */
     private String avatar;
 
-    // 擅长技能
+    /**
+     * 擅长技能
+     * 제공 가능한 기술
+     */
     private List<String> skills;
 
-    // 想学技能
+    /**
+     * 想学习技能
+     * 배우고 싶은 기술
+     */
     private List<String> wants;
 
-    // 学习时间段
+    /**
+     * 学习时间段
+     * 학습 가능 시간대
+     */
     private String timeSlot;
 
-    // 学习等级
-    private String learnLevel;
+    /**
+     * 想学习的技能等级
+     * 배우고 싶은 기술 수준
+     */
+    private String skillWantLevel;
 
-    // ===== 默认构造函数 =====
+    /**
+     * 擅长技能等级
+     * 제공 가능한 기술 수준
+     */
+    private String skillOfferLevel;
+
+    /**
+     * 平均评分
+     * 평균 평점
+     */
+    private Double averageRating;
+
+    /**
+     * 评分人数
+     * 평가 인원 수
+     */
+    private Integer ratingCount;
+
+    /**
+     * 默认构造函数
+     */
     public MatchUserResponse() {
     }
 
-    // ===== 全参构造函数 =====
+    /**
+     * 全参构造函数
+     */
     public MatchUserResponse(
             Long id,
             String username,
@@ -53,7 +112,10 @@ public class MatchUserResponse {
             List<String> skills,
             List<String> wants,
             String timeSlot,
-            String learnLevel
+            String skillWantLevel,
+            String skillOfferLevel,
+            Double averageRating,
+            Integer ratingCount
     ) {
         this.id = id;
         this.username = username;
@@ -65,10 +127,15 @@ public class MatchUserResponse {
         this.skills = skills;
         this.wants = wants;
         this.timeSlot = timeSlot;
-        this.learnLevel = learnLevel;
+        this.skillWantLevel = skillWantLevel;
+        this.skillOfferLevel = skillOfferLevel;
+        this.averageRating = averageRating;
+        this.ratingCount = ratingCount;
     }
 
-    // ===== Getter / Setter =====
+    // =========================
+    // Getter / Setter
+    // =========================
 
     public Long getId() {
         return id;
@@ -150,11 +217,35 @@ public class MatchUserResponse {
         this.timeSlot = timeSlot;
     }
 
-    public String getLearnLevel() {
-        return learnLevel;
+    public String getSkillWantLevel() {
+        return skillWantLevel;
     }
 
-    public void setLearnLevel(String learnLevel) {
-        this.learnLevel = learnLevel;
+    public void setSkillWantLevel(String skillWantLevel) {
+        this.skillWantLevel = skillWantLevel;
+    }
+
+    public String getSkillOfferLevel() {
+        return skillOfferLevel;
+    }
+
+    public void setSkillOfferLevel(String skillOfferLevel) {
+        this.skillOfferLevel = skillOfferLevel;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getRatingCount() {
+        return ratingCount;
+    }
+
+    public void setRatingCount(Integer ratingCount) {
+        this.ratingCount = ratingCount;
     }
 }

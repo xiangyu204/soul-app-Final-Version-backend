@@ -17,6 +17,7 @@ public class User {
     // 用户账号
     @Column(nullable = false, unique = true)
     private String username;
+
     // 用户密码
     private String password;
 
@@ -58,10 +59,6 @@ public class User {
     // 例如：weekday_morning
     private String timeSlot;
 
-    // 学习等级
-    // beginner / intermediate / advanced
-    private String learnLevel;
-
     // 项目 / 奖项 / 证书
     @Column(columnDefinition = "TEXT")
     private String projectAwards;
@@ -71,6 +68,14 @@ public class User {
 
     // 想学习技能等级
     private String skillWantLevel;
+
+    // 擅长技能 Quiz 分数
+    @Column(name = "teach_quiz_score")
+    private Integer teachQuizScore = 0;
+
+    // 想学习技能 Quiz 分数
+    @Column(name = "learn_quiz_score")
+    private Integer learnQuizScore = 0;
 
     // 可交流时间
     private String availableTime;
@@ -88,6 +93,14 @@ public class User {
     // 获奖详情
     @Column(columnDefinition = "TEXT")
     private String awardDetail;
+
+    // 用户平均评分
+    @Column(name = "average_rating")
+    private Double averageRating = 0.0;
+
+    // 用户评分次数
+    @Column(name = "rating_count")
+    private Integer ratingCount = 0;
 
     // 主题模式
     private String themeMode;
@@ -225,22 +238,12 @@ public class User {
         this.nationality = nationality;
     }
 
-    // 学习时间段
     public String getTimeSlot() {
         return timeSlot;
     }
 
     public void setTimeSlot(String timeSlot) {
         this.timeSlot = timeSlot;
-    }
-
-    // 学习等级
-    public String getLearnLevel() {
-        return learnLevel;
-    }
-
-    public void setLearnLevel(String learnLevel) {
-        this.learnLevel = learnLevel;
     }
 
     public String getProjectAwards() {
@@ -265,6 +268,22 @@ public class User {
 
     public void setSkillWantLevel(String skillWantLevel) {
         this.skillWantLevel = skillWantLevel;
+    }
+
+    public Integer getTeachQuizScore() {
+        return teachQuizScore;
+    }
+
+    public void setTeachQuizScore(Integer teachQuizScore) {
+        this.teachQuizScore = teachQuizScore;
+    }
+
+    public Integer getLearnQuizScore() {
+        return learnQuizScore;
+    }
+
+    public void setLearnQuizScore(Integer learnQuizScore) {
+        this.learnQuizScore = learnQuizScore;
     }
 
     public String getAvailableTime() {
@@ -309,6 +328,26 @@ public class User {
 
     public void setAwardDetail(String awardDetail) {
         this.awardDetail = awardDetail;
+    }
+
+    // =========================
+    // 评分信息
+    // =========================
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getRatingCount() {
+        return ratingCount;
+    }
+
+    public void setRatingCount(Integer ratingCount) {
+        this.ratingCount = ratingCount;
     }
 
     // =========================

@@ -1,15 +1,17 @@
 package com.example.soul.controller;
 
+import com.example.soul.dto.MatchHistoryResponse;
 import com.example.soul.dto.MatchUserResponse;
+import com.example.soul.dto.UserMatchProfileResponse;
+import com.example.soul.entity.ChatRoom;
 import com.example.soul.entity.User;
+import com.example.soul.repository.ChatRoomRepository;
 import com.example.soul.repository.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -19,75 +21,184 @@ import java.util.stream.Collectors;
  * 匹配功能 API 控制器
  */
 @RestController
-
-// 기본 주소 설정
-// 基础请求地址
-// /api/match
 @RequestMapping("/api/match")
 public class MatchQueryController {
 
-    // 사용자 데이터베이스 연결
-    // 用户数据库连接
+    /**
+     * 用户数据库
+     */
     private final UserRepository userRepository;
 
-    // 생성자 주입
-    // 构造函数注入
-    public MatchQueryController(UserRepository userRepository) {
+    /**
+     * 聊天室数据库
+     */
+    private final ChatRoomRepository chatRoomRepository;
+
+    /**
+     * 构造函数注入
+     */
+    public MatchQueryController(
+            UserRepository userRepository,
+            ChatRoomRepository chatRoomRepository
+    ) {
         this.userRepository = userRepository;
+        this.chatRoomRepository = chatRoomRepository;
     }
 
     /**
-     * 사용자 매칭 기능
-     * 用户匹配功能
-     *
+     * ==================================================
+     * 用户详情 + 历史匹配记录
+     * GET /api/match/profile/{userId}
+     * ==================================================
+     */
+    @GetMapping("/profile/{userId}")
+    public UserMatchProfileResponse getProfile(
+            @PathVariable Long userId
+    ) {
+
+        // 查询用户
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("用户不存在")
+                );
+
+        // 查询用户参与过的聊天室
+        List<ChatRoom> rooms =
+                chatRoomRepository.findByUser1IdOrUser2Id(
+                        userId,
+                        userId
+                );
+
+        List<MatchHistoryResponse> histories =
+                new ArrayList<>();
+
+        // 遍历聊天室
+        for (ChatRoom room : rooms) {
+
+            Long partnerId;
+
+            // 找到对方用户ID
+            if (room.getUser1Id().equals(userId)) {
+                partnerId = room.getUser2Id();
+            } else {
+                partnerId = room.getUser1Id();
+            }
+
+            User partner = userRepository
+                    .findById(partnerId)
+                    .orElse(null);
+
+            if (partner == null) {
+                continue;
+            }
+
+            histories.add(
+                    new MatchHistoryResponse(
+                            partner.getId(),
+                            partner.getName() == null ||
+                                    partner.getName().isBlank()
+                                    ? partner.getUsername()
+                                    : partner.getName(),
+                            partner.getAvatar(),
+                            room.getCreatedAt()
+                    )
+            );
+        }
+
+        // 时间倒序排序
+        histories.sort(
+                Comparator.comparing(
+                        MatchHistoryResponse::getMatchTime,
+                        Comparator.nullsLast(
+                                Comparator.reverseOrder()
+                        )
+                )
+        );
+
+        // 返回用户资料
+        // 返回用户资料
+        UserMatchProfileResponse response =
+                new UserMatchProfileResponse();
+
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setName(user.getName());
+        response.setAge(user.getAge());
+        response.setNationality(user.getNationality());
+        response.setAvatar(user.getAvatar());
+
+        // 技能信息
+        response.setSkillOffer(user.getSkillOffer());
+        response.setSkillWant(user.getSkillWant());
+
+        // 平均评分
+        response.setAverageRating(
+                user.getAverageRating()
+        );
+
+        // 评分人数
+        response.setRatingCount(
+                user.getRatingCount()
+        );
+
+        // 历史匹配记录
+        response.setHistories(histories);
+
+        return response;
+    }
+
+    /**
+     * ==================================================
+     * 技能匹配
      * GET /api/match
+     * ==================================================
      */
     @GetMapping
     public List<MatchUserResponse> match(
 
-            // 내가 가진 기술
             // 我会的技能
-            @RequestParam(required = false) String haveSkill,
+            @RequestParam(required = false)
+            String haveSkill,
 
-            // 내가 배우고 싶은 기술
             // 我想学的技能
-            @RequestParam(required = false) String wantSkill,
+            @RequestParam(required = false)
+            String wantSkill,
 
             // 学习时间段
-            // 학습 가능 시간대
-            @RequestParam(required = false) String timeSlot,
+            @RequestParam(required = false)
+            String timeSlot,
 
-            // 想学习的等级
-            // 배우고 싶은 기술 레벨
-            @RequestParam(required = false) String learnLevel,
+            // 想学习等级
+            @RequestParam(required = false)
+            String skillWantLevel,
 
-            // 반환 인원 수
+            // 会的技能等级
+            @RequestParam(required = false)
+            String skillOfferLevel,
+
             // 返回人数
-            @RequestParam(defaultValue = "5") int limit
+            @RequestParam(defaultValue = "5")
+            int limit
     ) {
 
-        // 문자열 공백 제거
-        // 去除字符串空格
         String have = normalize(haveSkill);
         String want = normalize(wantSkill);
         String time = normalize(timeSlot);
-        String level = normalize(learnLevel);
 
-        // 전체 사용자 조회
-        // 查询全部用户
+        String wantLevel = normalize(skillWantLevel);
+        String offerLevel = normalize(skillOfferLevel);
+
+        // 查询所有用户
         List<User> all = userRepository.findAll();
 
-        // 조건에 맞는 사용자 저장 리스트
-        // 存放符合条件用户的列表
-        List<User> filtered = new ArrayList<>();
+        List<User> filtered =
+                new ArrayList<>();
 
-        // 사용자 반복 검사
-        // 循环筛选用户
         for (User u : all) {
 
             boolean ok = true;
 
-            // 对方是否会我想学的技能
+            // 对方会我想学的
             if (want != null) {
                 ok = ok && containsSkill(
                         u.getSkillOffer(),
@@ -95,7 +206,7 @@ public class MatchQueryController {
                 );
             }
 
-            // 对方是否想学我会的技能
+            // 对方想学我会的
             if (have != null) {
                 ok = ok && containsSkill(
                         u.getSkillWant(),
@@ -103,8 +214,7 @@ public class MatchQueryController {
                 );
             }
 
-            // 学习时间段匹配
-            // 学습 시간대 매칭
+            // 时间段匹配
             if (time != null) {
 
                 ok = ok && time.equalsIgnoreCase(
@@ -113,119 +223,123 @@ public class MatchQueryController {
             }
 
             // 学习等级匹配
-            // 학습 레벨 매칭
-            if (level != null) {
+            if (wantLevel != null) {
 
-                ok = ok && level.equalsIgnoreCase(
+                ok = ok && wantLevel.equalsIgnoreCase(
                         normalize(u.getSkillWantLevel())
                 );
             }
 
-            // 조건 만족 시 리스트 추가
-            // 满足条件则加入列表
+            // 擅长等级匹配
+            if (offerLevel != null) {
+
+                ok = ok && offerLevel.equalsIgnoreCase(
+                        normalize(u.getSkillOfferLevel())
+                );
+            }
+
             if (ok) {
                 filtered.add(u);
             }
         }
 
-        // 랜덤 정렬
         // 随机排序
         Collections.shuffle(filtered);
 
-        // limit 최소값 처리
-        // limit 最小值处理
         if (limit < 0) {
             limit = 0;
         }
 
-        // 프론트엔드로 반환
-        // 返回前端数据
         return filtered.stream()
-
-                // 반환 개수 제한
-                // 限制返回数量
                 .limit(limit)
-
-                // DTO 변환
-                // 转换为 DTO
                 .map(this::toResponse)
-
-                // List 변환
-                // 转换为 List
                 .collect(Collectors.toList());
     }
 
     /**
-     * User 객체 → MatchUserResponse 변환
-     * User 对象 → MatchUserResponse 转换
+     * User -> MatchUserResponse
+     */
+    /**
+     * User -> MatchUserResponse
+     * 用户实体转匹配返回DTO
      */
     private MatchUserResponse toResponse(User u) {
 
-        // 이름 없으면 username 사용
-        // 如果没有名字则使用 username
         String name = u.getName();
 
-        if (name == null || name.trim().isEmpty()) {
+        // 没填写昵称则显示账号
+        if (name == null ||
+                name.trim().isEmpty()) {
+
             name = u.getUsername();
         }
 
-        // 가르칠 기술 리스트
-        // 擅长技能列表
-        List<String> skills =
-                splitSkills(u.getSkillOffer());
-
-        // 배우고 싶은 기술 리스트
-        // 想学技能列表
-        List<String> wants =
-                splitSkills(u.getSkillWant());
-
-        // 프론트엔드 응답 데이터 생성
-        // 创建前端返回数据
         return new MatchUserResponse(
+
+                // 用户ID
                 u.getId(),
+
+                // 用户账号
                 u.getUsername(),
+
+                // 显示名称
                 name,
+
+                // 年龄
                 u.getAge(),
+
+                // 性别
                 u.getGender(),
+
+                // 国籍
                 u.getNationality(),
+
+                // 头像
                 u.getAvatar(),
-                skills,
-                wants,
+
+                // 擅长技能
+                splitSkills(u.getSkillOffer()),
+
+                // 想学习技能
+                splitSkills(u.getSkillWant()),
+
+                // 时间段
                 u.getTimeSlot(),
-                u.getSkillWantLevel()
+
+                // 想学习等级
+                u.getSkillWantLevel(),
+
+                // 擅长等级
+                u.getSkillOfferLevel(),
+
+                // 平均评分
+                u.getAverageRating(),
+
+                // 评分人数
+                u.getRatingCount()
         );
     }
 
     /**
-     * 기술 문자열 → 배열 변환
-     * 技能字符串 → 数组转换
-     *
-     * "Java,Spring"
-     * →
-     * ["Java","Spring"]
+     * 技能字符串转List
      */
     private List<String> splitSkills(String raw) {
 
         String v = normalize(raw);
 
-        // null이면 빈 배열 반환
-        // 如果为空则返回空数组
         if (v == null) {
             return List.of();
         }
 
-        // 콤마 기준 분리
-        // 按逗号切割
         String[] parts = v.split(",");
 
-        List<String> res = new ArrayList<>();
+        List<String> res =
+                new ArrayList<>();
 
         for (String p : parts) {
 
             String t = normalize(p);
 
-            // 공백이 아니면 추가
-            // 非空则加入数组
             if (t != null) {
                 res.add(t);
             }
@@ -235,64 +349,50 @@ public class MatchQueryController {
     }
 
     /**
-     * 기술 포함 여부 확인
-     * 判断是否包含技能
+     * 判断技能是否匹配
      */
     private boolean containsSkill(
             String raw,
             String target
     ) {
 
-        // 값 없으면 false
-        // 如果为空返回 false
         if (raw == null) {
             return false;
         }
 
-        // 소문자 변환
-        // 转小写
         String hay =
                 raw.toLowerCase(Locale.ROOT);
 
         String needle =
                 target.toLowerCase(Locale.ROOT);
 
-        // 콤마 기준 검사
-        // 按逗号逐个匹配
         for (String part : hay.split(",")) {
 
             String t = part.trim();
 
-            // 완전 일치
-            // 完全匹配
-            if (!t.isEmpty() && t.equals(needle)) {
+            if (!t.isEmpty()
+                    && t.equals(needle)) {
+
                 return true;
             }
         }
 
-        // 부분 포함 검사
-        // 部分包含判断
         return hay.contains(needle);
     }
 
     /**
-     * 문자열 공백 제거
-     * 去除字符串空格
+     * 去空格
      */
     private String normalize(String v) {
 
-        // null 체크
-        // null 判断
         if (v == null) {
             return null;
         }
 
-        // 양쪽 공백 제거
-        // 去除前后空格
         String t = v.trim();
 
-        // 빈 문자열이면 null 반환
-        // 空字符串返回 null
-        return t.isEmpty() ? null : t;
+        return t.isEmpty()
+                ? null
+                : t;
     }
 }

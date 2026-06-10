@@ -57,7 +57,11 @@ public class QuizService {
         Long quizId = quizIdSeq++;
 
         // 使用 Ollama AI 根据用户输入的技能生成 20 道题
-        List<QuizQuestionData> questions = generateQuestionsByAi(request.getSkill());
+        List<QuizQuestionData> questions =
+                generateQuestionsByAi(
+                        request.getSkill(),
+                        request.getTargetLang()
+                );
 
         // 把这次测试的题目保存起来
         // 后面提交答案时，要根据 quizId 找回这些题目和正确答案
@@ -178,7 +182,50 @@ public class QuizService {
     }
 
     // 调用 Ollama AI 生成 20 道题
-    private List<QuizQuestionData> generateQuestionsByAi(String skill) {
+    private List<QuizQuestionData> generateQuestionsByAi(
+            String skill,
+            String targetLang
+    ) {
+        String questionLanguage;
+
+        if (targetLang == null || targetLang.isBlank()) {
+            targetLang = "ko";
+        }
+
+        switch (targetLang.toLowerCase()) {
+
+            case "zh":
+            case "zh-cn":
+                questionLanguage = "中文";
+                break;
+
+            case "en":
+                questionLanguage = "English";
+                break;
+
+            case "ja":
+                questionLanguage = "日本語";
+                break;
+
+            case "fr":
+                questionLanguage = "Français";
+                break;
+
+            case "de":
+                questionLanguage = "Deutsch";
+                break;
+
+            case "es":
+                questionLanguage = "Español";
+                break;
+
+            case "ar":
+                questionLanguage = "العربية";
+                break;
+
+            default:
+                questionLanguage = "한국어";
+        }
 
         // 给 AI 的提示词
         // 要求 AI 必须返回 JSON 数组，方便后端解析
@@ -196,7 +243,7 @@ public class QuizService {
                 6. 不要返回解释文字
                 7. 不要使用 markdown
                 8. 不要使用 ```json
-                9. 题目语言使用中文
+                9. 题目语言使用%s
                 10. 选项不要带 A、B、C、D 前缀，只返回选项文字
 
                 用户输入的技能是：%s
@@ -209,7 +256,7 @@ public class QuizService {
                     "correctAnswer": "A"
                   }
                 ]
-                """.formatted(skill);
+                """.formatted(questionLanguage,skill);
 
         // Ollama /api/generate 接口需要的请求体
         Map<String, Object> body = new HashMap<>();

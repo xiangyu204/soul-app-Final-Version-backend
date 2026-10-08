@@ -4,25 +4,28 @@ spring:
     username: dev
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   cache:
     type: caffeine
     caffeine:
       spec: maximumSize=30000,expireAfterWrite=3000000m
+
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
 
-
 server:
   port: 8080
   address: 0.0.0.0
 
-ollama:
-  base-url: http://localhost:11434
-  model: gemma4:31b-cloud
+deepseek:
+  base-url: https://api.deepseek.com
+  api-key: sk-097fcb205e444556a6a62f22afee4fb3
+  model: deepseek-flash
